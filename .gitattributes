@@ -1,0 +1,19 @@
+# Centralized Git attributes to prevent binary corruption and enforce line ending consistency
+
+# Set default behavior to automatic text conversion with LF line endings
+* text=auto eol=lf
+
+# Force scripts to use LF line endings
+gradlew text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+
+# Explicitly declare binary files that must not be modified/corrupted by Git (especially line ending conversion)
+*.jar binary
+*.keystore binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
