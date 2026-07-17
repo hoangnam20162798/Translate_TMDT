@@ -1,5 +1,10 @@
 package com.example.ui
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
@@ -24,6 +29,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,9 +43,19 @@ import kotlinx.coroutines.launch
 fun SimulationScreen(
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var isOverlayServiceActive by remember { mutableStateOf(false) }
     var selectedMockScreen by remember { mutableStateOf("Taobao") } // Taobao, Amazon, JpStore
+    
+    // Check overlay status on compose
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            isOverlayServiceActive = Settings.canDrawOverlays(context)
+        } else {
+            isOverlayServiceActive = false
+        }
+    }
     
     // Scan states
     var isScanning by remember { mutableStateOf(false) }
@@ -130,9 +146,27 @@ fun SimulationScreen(
                 
                 Switch(
                     checked = isOverlayServiceActive,
-                    onCheckedChange = { 
-                        isOverlayServiceActive = it 
-                        if (!it) {
+                    onCheckedChange = { active ->
+                        if (active) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(context)) {
+                                val intent = Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:${context.packageName}")
+                                ).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                context.startActivity(intent)
+                                Toast.makeText(context, "Vui lòng cấp quyền Vẽ lên ứng dụng khác để bật bong bóng dịch nhé!", Toast.LENGTH_LONG).show()
+                            } else {
+                                isOverlayServiceActive = true
+                                val serviceIntent = Intent(context, FloatingBubbleService::class.java)
+                                context.startService(serviceIntent)
+                                Toast.makeText(context, "Đã kích hoạt Bong Bóng Dịch Nổi!", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            isOverlayServiceActive = false
+                            val serviceIntent = Intent(context, FloatingBubbleService::class.java)
+                            context.stopService(serviceIntent)
                             isTranslated = false
                         }
                     },
