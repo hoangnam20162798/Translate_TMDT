@@ -1,0 +1,6 @@
+{
+  "name": "Dịch Mua Sắm AI",
+  "description": "Trợ lý dịch màn hình và hỗ trợ mua sắm thương mại điện tử nước ngoài bằng AI (Gemini)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
